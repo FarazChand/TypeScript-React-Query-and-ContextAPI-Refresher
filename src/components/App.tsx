@@ -13,14 +13,13 @@ import JobList from "./JobList";
 import PaginationControls from "./PaginationControls";
 import ResultsCount from "./ResultsCount";
 import SortingControls from "./SortingControls";
-import { useActiveId, useJobItem, useJobItems } from "../lib/hooks";
-import { BASE_API_URL } from "../lib/constants";
+import { useDebounce, useJobItems } from "../lib/hooks";
 
 function App() {
   const [searchText, setSearchText] = useState("");
-  const [jobItems, isLoading] = useJobItems(searchText);
-  const activeId = useActiveId();
-  const jobItem = useJobItem(activeId);
+  const debouncedSearchText = useDebounce(searchText, 330);
+  const { jobItemsSliced, isLoading, totalNumberOfResults } =
+    useJobItems(debouncedSearchText);
 
   return (
     <>
@@ -38,11 +37,11 @@ function App() {
       <Container>
         <Sidebar>
           <SidebarTop>
-            <ResultsCount />
+            <ResultsCount totalNumberOfResults={totalNumberOfResults} />
             <SortingControls />
           </SidebarTop>
 
-          <JobList jobItems={jobItems} isLoading={isLoading} />
+          <JobList jobItems={jobItemsSliced} isLoading={isLoading} />
 
           <PaginationControls />
         </Sidebar>
