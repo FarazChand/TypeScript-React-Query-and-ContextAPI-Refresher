@@ -1,26 +1,32 @@
 import { BookmarkFilledIcon } from "@radix-ui/react-icons";
-import { useContext } from "react";
-import { BookmarksContext } from "../contexts/BookmarksContextProvider";
+import { useState } from "react";
+import { useBookmarksContext } from "../lib/hooks";
 
 type BookmarkIconProps = {
   id: number;
 };
 
 export default function BookmarkIcon({ id }: BookmarkIconProps) {
-  const { bookdmarkedIds, handleToggleBookmark } = useContext(BookmarksContext);
+  const { bookmarkedIds, handleToggleBookmark } = useBookmarksContext();
+  const [renderKey, setRenderKey] = useState(0); // State variable for triggering re-render
 
-  const bookMarked = bookdmarkedIds.includes(id);
+  const bookmarked = bookmarkedIds.includes(id);
 
   return (
     <button
       onClick={(e) => {
         handleToggleBookmark(id);
+        setRenderKey((prevKey) => prevKey + 1);
+
         e.stopPropagation();
         e.preventDefault();
       }}
       className="bookmark-btn"
     >
-      <BookmarkFilledIcon className={bookMarked ? "filled" : ""} />
+      <BookmarkFilledIcon
+        key={renderKey}
+        className={bookmarked ? "filled" : ""}
+      />
     </button>
   );
 }
