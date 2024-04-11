@@ -4,6 +4,9 @@ import { JobItem, JobItemExpanded } from "./types";
 import { BASE_API_URL } from "./constants";
 import { handleError } from "./utils";
 import { BookmarksContext } from "../contexts/BookmarksContextProvider";
+import { ActiveIdContext } from "../contexts/ActiveIdContextProvider";
+import { SearchTextContext } from "../contexts/SearchTextContextProvider";
+import { JobItemsContext } from "../contexts/JobItemsContextProvider";
 
 // -----------------------------------------
 type JobItemApiResponse = {
@@ -57,7 +60,9 @@ export function useJobItems(ids: number[]) {
 
   const jobItems = results
     .map((result) => result.data?.jobItem)
-    .filter((jobItem) => jobItem !== undefined);
+    // .filter((jobItem) => jobItem !== undefined);
+    // .filter((jobItem) => !!jobItem);
+    .filter((jobItem) => Boolean(jobItem)) as JobItemExpanded[];
   const isLoading = results.some((result) => result.isLoading);
 
   return {
@@ -147,8 +152,6 @@ export function useActiveId() {
   return activeId;
 }
 
-//------------------------------------------------------------
-
 export function useLocalStorage<T>(
   key: string,
   initialValue: T
@@ -164,13 +167,62 @@ export function useLocalStorage<T>(
   return [value, setValue] as const;
 }
 
-//
+export function useOnClickOutside(
+  refs: React.RefObject<HTMLElement>[],
+  handler: () => void
+) {
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (refs.every((ref) => !ref.current?.contains(e.target as Node))) {
+        handler();
+      }
+    };
+
+    document.addEventListener("click", handleClick);
+
+    return () => {
+      document.removeEventListener("click", handleClick);
+    };
+  }, [refs, handler]);
+}
+
+//------------------------------------------------------------
 
 export function useBookmarksContext() {
   const context = useContext(BookmarksContext);
   if (!context) {
     throw new Error(
-      "useBookmarkIcon must be used within a BookmarksContextProvider"
+      "useBookmarksContext must be used within a BookmarksContextProvider"
+    );
+  }
+  return context;
+}
+
+export function useActiveIdContext() {
+  const context = useContext(ActiveIdContext);
+  if (!context) {
+    throw new Error(
+      "useActiveIdContext must be used within a ActiveIdContextProvider"
+    );
+  }
+  return context;
+}
+
+export function useSearchTextContext() {
+  const context = useContext(SearchTextContext);
+  if (!context) {
+    throw new Error(
+      "useSearchText must be used within a SearchTextContextProvider"
+    );
+  }
+  return context;
+}
+
+export function useJobItemsContext() {
+  const context = useContext(JobItemsContext);
+  if (!context) {
+    throw new Error(
+      "useJobItems must be used within a JobItemsContextProvider"
     );
   }
   return context;
